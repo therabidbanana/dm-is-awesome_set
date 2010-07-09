@@ -4,8 +4,6 @@ require 'dm-core'
 require 'dm-migrations'
 require 'dm-adjust'
 require 'dm-aggregates'
-require 'dm-types'
-require 'dm-validations'
 require 'dm-transactions'
 
 $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)

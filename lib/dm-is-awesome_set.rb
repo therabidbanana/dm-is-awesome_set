@@ -263,29 +263,31 @@ module DataMapper
         # Destroys the current node and all children nodes, running their before and after hooks
         # Returns the destroyed objects
         def destroy
-          sads = self_and_descendants
-          hooks = get_class.const_get('INSTANCE_HOOKS')
-          before_methods = hooks[:destroy][:before].map { |hash| hash[:name] }
-          after_methods =  hooks[:destroy][:after].map  { |hash| hash[:name] }
-          # Trigger all the before :destroy methods
-          sads.each { |sad| before_methods.each { |bf| sad.send(bf) } }
-          # dup is called here because destroy! likes to clear out the array, understandably.
-          get_class.transaction do
-            sads.dup.destroy!
-            adjust_gap!(full_set, lft, -(rgt - lft + 1))
+          return true if destroyed?
+          catch :halt do
+            sads = self_and_descendants
+            # Trigger all the before :destroy methods
+            sads.each { |sad| sad.before_destroy_hook }
+            # dup is called here because destroy! likes to clear out the array, understandably.
+            get_class.transaction do
+              sads.dup.destroy!
+              adjust_gap!(full_set, lft, -(rgt - lft + 1))
+            end
+            # Now go through after all the after :destroy methods.
+            sads.each { |sad| sad.after_destroy_hook }
           end
-          # Now go through after all the after :destroy methods.
-          sads.each { |sad| after_methods.each { |bf| sad.send(bf) } }
+          destroyed?
         end
 
         # Same as @destroy, but does not run the hooks
         def destroy!
+          return true if destroyed?
           sad = self_and_descendants
           get_class.transaction do
             sad.dup.destroy!
             adjust_gap!(full_set, lft, -(rgt - lft + 1))
           end
-          sad
+          destroyed?
         end
 
       protected
