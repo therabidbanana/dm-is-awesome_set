@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{dm-is-awesome_set}
-  s.version = "1.0.0"
+  s.version = "1.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Nicoll", "David Haslem", "Martin Gamsjaeger (snusnu)"]
-  s.date = %q{2010-07-08}
+  s.date = %q{2010-07-09}
   s.description = %q{A library that lets any datamapper model act like a nested set}
   s.email = %q{jnicoll@gnexp.com}
   s.extra_rdoc_files = [
