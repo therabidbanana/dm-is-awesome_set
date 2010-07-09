@@ -420,6 +420,57 @@ describe DataMapper::Is::AwesomeSet do
       Discrim2.roots(scope2.merge(:type => 'CatD22')).size.should eql(2)
     end
     
+    
+    it "should destroy properly" do
+
+      c1 = Category.create(scope)
+      c2 = Category.create(scope)
+
+      c3 = Category.create(scope2)
+      c4 = Category.create(scope2)
+      c5 = Category.create(scope2)
+      c6 = Category.create(scope2)
+      c5.move(:into => c4)
+      [c3,c4,c5,c6].each{|c| c.reload }
+      c4.move(:into => c3)
+      [c3,c4,c5,c6].each{|c| c.reload}
+      c6.move(:into => c3)
+      [c1,c2,c3,c4,c5,c6].each { |c| c.reload }
+      
+      c1.pos.should eql([1,2])
+      c2.pos.should eql([3,4])
+      
+      c3.pos.should eql([1,8])
+      c4.pos.should eql([2,5])
+      c5.pos.should eql([3,4])
+      c6.pos.should eql([6,7])
+      # c4.should_receive(:before_destroy_hook).once
+      # c5.should_receive(:before_destroy_hook).once
+      # c6.should_not_receive(:before_destroy_hook)
+      
+      lambda {
+        c2.destroy
+      }.should_not raise_error
+      c1.destroyed?.should be_false
+      c2.destroyed?.should be_true
+      lambda {
+        c4.destroy
+      }.should_not raise_error
+      c4.destroyed?.should be_true
+      c5.destroyed?.should be_true
+      c3.destroyed?.should be_false
+      c6.destroyed?.should be_false
+      
+      [c1,c2,c3,c4,c5,c6].each { |c| c.reload }
+      
+      c3.pos.should eql([1, 4])
+      c6.pos.should eql([2, 3])
+      lambda {
+        c3.destroy!
+      }.should_not raise_error
+      
+    end
+    
   end
   
   describe "with active DM Identity Map" do
